@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Narratives</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+	.no-bullet{
+		list-style: none;
+	}
+  </style>
+</head>
+<body>
+	<div class="container-fluid min-vh-100 d-flex">
+		<div class="row flex-grow-1 w-100">
+			<!--begin::Column1-->
+			<div class="col-md-3 bg-primary-subtle d-flex flex-column gap-5 p-3 py-4">
+				<div class="d-flex  flex-column mb-3 h-100">
+
+					<!--begin::Manual input-->
+					<div>
+						<h5 class="mb-1">Manual input</h5>
+						<div class="card bg-light text-dark">
+							<form method="POST" action="/process_text">
+								<div class="card-body">
+									<div class="form-floating">
+										<textarea name="user_text" class="form-control" placeholder="Put here your disinformation or true text" id="floatingTextarea2" style="height: 100px; width:100%"></textarea>
+										<label for="floatingTextarea2" class="text-black-50" style="width:100%">Add your disinformation or true text</label>
+									</div>
+									<div class="text-end mt-3">
+										<button type="submit" class="btn btn-primary">Analyse</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+					<!--end::Manual input-->
+
+					<!--begin::Update model-->
+					<div class="mt-auto p-2">
+						<h5 class="mb-1">Update model</h5>
+						<div class="card bg-light text-dark">
+							<div class="card-body">
+								<div class="input-group">
+									<input type="file" class="form-control" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+									<button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Upload CSV</button>
+								</div>
+								<small class="text-body-secondary d-block">The dataset must be in the format: <br/>text (fake news text) and label (true or false)</small>
+							</div>
+						</div>
+					</div>
+					<!--end::Update model-->
+					
+					<!--end::Full retrain-->
+					<div class="p-2">
+						<div class="card bg-primary-subtle text-dark">
+							<div class="card-body">
+								<h6 class="text-danger">Full retrain</h6>
+								<div class="input-group">
+									<input type="file" class="form-control" id="inputGroupFile05" aria-describedby="inputGroupFileAddon05" aria-label="Upload">
+									<button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon05">Upload CSV</button>
+								</div>
+								<small class="text-body-secondary d-block mb-1">The dataset must be in the format: <br/>text (fake news text) and label (true or false)</small>
+								<i class="bi bi-exclamation-circle text-danger"></i> <small class="text-danger">Warning: the full retrain will erase all the structures</small>
+							</div>
+						</div>
+					</div>
+					<!--end::Full retrain-->
+				</div>
+			</div>
+			<!--end::Column1-->
+
+			<!--begin::Column2-->
+			<div class="col-md-5 bg-body-tertiary p-3">
+				<h3 class="mb-3">Correction set</h3>
+				<ul class="list-unstyled d-flex flex-column gap-4">
+					{% for item in intro_texts %}
+					<div class="card bg-light text-dark p-3">
+						<div class="d-flex justify-content-between align-items-start">
+							<h5 class="mb-0">{{item['user_text']}}</h5>
+							<form method="POST" action="/remove_node">
+								<input type="hidden" name="narrative_text" value="{{item['user_text']}}">
+								<button type="submit" class="btn-close" aria-label="Close"></button>
+							</form>
+						</div>
+						<hr class="my-2">
+						<div class="d-flex justify-content-between align-items-start">
+							<div class="col-6">
+								<ul>
+<!--									<li><small class="me-2">True label:</small><span>unknown</span></li>-->
+									<li><small class="me-2">Predicted label:</small><span>
+										{% if item['label']==0 %}
+											True </span></li>
+
+										{% else %}
+											Disinformation </span></li>
+									<li class="no-bullet"><small class="text-secondary">Part of narrative: {{item['node'].text}}</small></li>
+										{% endif %}
+
+
+								</ul>
+							</div>
+							<div class="col-6 text-end align-self-end">
+									{% if item['label']==0 %}
+									<form method="POST" action="/mark_item_as_fake">
+										<input type="hidden" name="narrative_text" value="{{item['user_text']}}">
+										<button type="submit" class="btn btn-outline-primary align-self-end">Mark item as fake</button>
+									</form>
+									{% else %}
+										<form method="POST" action="/get_internal_structure">
+											<input type="hidden" name="narrative_text" value="{{item['node'].text}}">
+											<button type="submit" class="btn btn-outline-primary align-self-end">Modify element</button>
+										</form>
+									{% endif %}
+
+							</div>
+						</div>
+					</div>
+
+
+					  {% endfor %}
+<!--					<li>-->
+<!--						<div class="card bg-light text-dark p-3">-->
+<!--							<div class="d-flex justify-content-between align-items-start">-->
+<!--								<h5 class="mb-0">Your text</h5>-->
+<!--								<button type="button" class="btn-close" aria-label="Close"></button>-->
+<!--							</div>-->
+<!--							<hr class="my-2">-->
+<!--							<div class="d-flex justify-content-between align-items-start">-->
+<!--								<div class="col-6">-->
+<!--									<ul>-->
+<!--										<li><small class="me-2">True label:</small><span>unknown</span></li>-->
+<!--										<li><small class="me-2">Predicted label:</small><span>true</span></li>-->
+<!--									</ul>-->
+<!--								</div>-->
+<!--								<div class="col-6 text-end align-self-end">-->
+<!--									<button type="button" class="btn btn-outline-primary align-self-end">Add item as fake news to the dataset</button>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</li>-->
+<!--					<li>-->
+<!--						<div class="card bg-light text-dark p-3">-->
+<!--							<div class="d-flex justify-content-between align-items-start">-->
+<!--								<h5 class="mb-0">Ukraine is not a country</h5>-->
+<!--								<button type="button" class="btn-close" aria-label="Close"></button>-->
+<!--							</div>-->
+<!--							<hr class="my-2">-->
+<!--							<div class="d-flex justify-content-between align-items-start">-->
+<!--								<div class="col-6">-->
+<!--									<ul>-->
+<!--										<li><small class="me-2">True label:</small><span>false</span></li>-->
+<!--										<li><small class="me-2">Predicted label:</small><span>true</span></li>-->
+<!--									</ul>-->
+<!--								</div>-->
+<!--								<div class="col-6 text-end align-self-end">-->
+<!--									<button type="button" class="btn btn-outline-primary align-self-end">Add item to the dataset</button>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</li>-->
+<!--					<li>-->
+<!--						<div class="card bg-light text-dark p-3">-->
+<!--							<div class="d-flex justify-content-between align-items-start">-->
+<!--								<h5 class="mb-0">Bill Gates has a back jumper</h5>-->
+<!--								<button type="button" class="btn-close" aria-label="Close"></button>-->
+<!--							</div>-->
+<!--							<hr class="my-2">-->
+<!--							<div class="d-flex justify-content-between align-items-start">-->
+<!--								<div class="col-6">-->
+<!--									<ul>-->
+<!--										<li><small class="me-2">True label:</small><span>true</span></li>-->
+<!--										<li><small class="me-2">Predicted label:</small><span>false</span></li>-->
+<!--										<li class="no-bullet"><small class="text-secondary">Part of narrative: Bill Gates is ugly</small></li>-->
+<!--									</ul>-->
+<!--								</div>-->
+<!--								<div class="col-6 text-end align-self-end">-->
+<!--									<button type="button" class="btn btn-outline-primary align-self-end">Modify element</button>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</li>-->
+				</ul>
+			</div>
+			<!--end::Column2-->
+
+			<!--begin::Column3-->
+
+		 	<div class="col-md-4 column p-3">
+				<h3 class="mb-3">Internal classification structure</h3>
+				{% if spotlight_node != None %}
+				<!--begin::Parent narrative-->
+				<div class="card p-3 bg-primary">
+
+					<div class="d-flex justify-content-between text-white">
+						{% if spotlight_node.parent != None %}
+						<form method="POST" action="/go_to_parent">
+							<button type="submit" class="btn btn-link p-0 border-0 bg-transparent shadow-none"> <i class="bi bi-skip-backward-fill text-white mr-2"></i></button>
+						</form>
+						{% endif %}
+						<p class="m-0" id="spotlightText">{{spotlight_node.text}}
+						<small class="d-block text-body-secondary">{{spotlight_node.level}}</small>
+						</p>
+						 <form method="POST" action="/edit_node" id="editForm" style="display: none;">
+							<input type="hidden" name="old_text" value="{{spotlight_node.text}}">
+							<input type="text" class="form-control form-control-md" style="width:400px" name="new_text" id="editInput"
+								value="{{spotlight_node.text}}" />
+						</form>
+						<div>
+							<a href="#" id="editBtn"><i class="bi bi-pencil-square text-white me-2"></i></a>
+							<form method="POST" action="/remove_node">
+								<input type="hidden" name="narrative_text" value="{{spotlight_node.text}}">
+								<button type="submit" class="btn btn-link p-0 border-0 bg-transparent shadow-none">
+									<i class="bi bi-trash3-fill text-white"></i>
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+				{% endif %}
+				<!--end::Parent narrative-->
+				<!--begin::Child narratives-->
+				<ul>
+					{% for child in children %}
+					<li class="no-bullet mt-2">
+						<div class="card p-3 bg-light">
+							<div class="d-flex justify-content-between">
+								<p class="m-0">{{child.text}}
+									<small class="d-block text-body-secondary">{{child.level}}</small>
+								</p>
+								<form method="POST" action="/go_to_children">
+									<input type="hidden" name="narrative_text" value="{{child.text}}">
+									<button type="submit" class="btn btn-link p-0 border-0 bg-transparent shadow-none"><i class="bi bi-eye text-body"></i></button>
+								</form>
+								<form method="POST" action="/remove_node">
+								<input type="hidden" name="narrative_text" value="{{child.text}}">
+								<button type="submit" class="btn btn-link p-0 border-0 bg-transparent shadow-none">
+									<i class="bi bi-trash3-fill text-body"></i>
+								</button>
+							</form>
+<!--								<a href="#"><i class="bi bi-trash3-fill text-body"></i></a>-->
+							</div>
+						</div>
+					</li>
+					{% endfor %}
+<!--					<li class="no-bullet mt-2">-->
+<!--						<div class="card p-3 bg-light">-->
+<!--							<div class="d-flex justify-content-between">-->
+<!--								<p class="m-0">Bill Gates is ugly and evil-->
+<!--									<small class="d-block text-body-secondary">10 elements</small>-->
+<!--								</p>-->
+<!--								<a href="#"><i class="bi bi-trash3-fill text-body"></i></a>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</li>-->
+<!--					<li class="no-bullet mt-2">-->
+<!--						<div class="card p-3 bg-light">-->
+<!--							<div class="d-flex justify-content-between">-->
+<!--								<p class="m-0">Bill Gates ugly</p>								-->
+<!--								<a href="#"><i class="bi bi-trash3-fill text-body"></i></a>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</li>-->
+				</ul>
+				<!--end::Child narratives-->
+			</div>
+
+			<!--end::Column3-->
+		</div>
+	</div>
+
+
+<script>
+    document.getElementById('editBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('spotlightText').style.display = 'none';
+        document.getElementById('editForm').style.display = 'block';
+        document.getElementById('editInput').focus();
+    });
+
+    // Submit form on Enter
+    document.getElementById('editInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('editForm').submit();
+        }
+    });
+</script>
+
+</body>
+</html>
