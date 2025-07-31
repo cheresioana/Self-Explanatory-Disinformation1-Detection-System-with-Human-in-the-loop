@@ -27,11 +27,17 @@ First unzip the archives from results and data/work_data folders.
 
 ### 🔧 Local
 
+To see the interface:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python app/app.py
+```
+
+To run the algorithms
+```bash
+python algo/2_create_trees.py
 ```
 
 ### 🐳 Docker
